@@ -1,0 +1,56 @@
+##################################################################################
+# 1 - Import des donn�es 
+##################################################################################
+
+# Importer la base de donn�es 
+# data.csv
+
+# Pensez � bien v�rifier le format de vos champs !!!
+# Pensez � regarder si des erreurs de saisie / valeurs aberrantes sont pr�sentes
+
+##################################################################################
+# 2 - Cr�ation d'une table de combattant unique
+##################################################################################
+
+# Etape 1 : faire un dataframe avec toutes les variables concernant le joueur bleu + Date + Gagnant + Cat�gorie de poids + Nombre de round
+# Etape 2 : faire un dataframe avec toutes les variables concernant le joueur rouge + Date + Gagnant + Cat�gorie de poids + Nombre de round
+# Etape 3 : Renommer les variables pour que les noms de colonnes soit identiques entre les deux dataframe cr��s ci-dessus 
+# Etape 4 : Concatener les deux dataframes en un seul
+# Etape 5 : S�lectionner seulement la ligne correspondant au dernier combat par combattant
+
+##################################################################################
+# 3 - Calculer la r�gression lin�aire simple entre le poids et la taille 
+##################################################################################
+
+# A - Analyse graphique
+
+# B - Construction du mod�le 
+# B1 - Estimation des param�tres (m�thode des moindres carr�s)
+# B2 - Test global du mod�le (test F) / tests de nullit� descoefficients
+# B3 - Qualit� du mod�le (coefficient R�)
+
+
+# C - V�rification des hypoth�ses
+# C1 - Valeurs ajust�es / r�sidus studentis�s (ind�pendance, structure de variance, points aberrants)
+# C2 - Distance de Cook (points influents)
+# C3 - Droite de Henry (normalit�)
+
+# D - Pr�diction 
+# Quel serait la taille d'une personne pesant 135 lbs
+
+##################################################################################
+# 4- Calculer la r�gression lin�aire multiple entre le ratio de victoire et 
+# Le nombre de coup � la t�te / le nombre de coup au corp / le nombre de coup au sol 
+##################################################################################
+# A - Analyse graphique
+
+# B - Construction du mod�le 
+# B1 - Estimation des param�tres (m�thode des moindres carr�s)
+# B2 - Test global du mod�le (test F) / tests de nullit� descoefficients
+# B3 - Qualit� du mod�le (coefficient R�)
+
+
+# C - V�rification des hypoth�ses
+# C1 - Valeurs ajust�es / r�sidus studentis�s (ind�pendance, structure de variance, points aberrants)
+# C2 - Distance de Cook (points influents)
+# C3 - Droite de Henry (normalit�)
