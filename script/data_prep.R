@@ -7,6 +7,10 @@
 
 data <- read.csv2("./data/data.csv", header = TRUE, sep = ",")
 
+load("./data/combat_MMA.RData")
+
+data_all_unique <- df
+
 # Pensez à bien vérifier le format de vos champs !!!
 
 
@@ -140,17 +144,202 @@ qqline(rstud, lty=2, lwd=2, col=2)
 
 ##################################################################################
 # 4- Calculer la régression linéaire multiple entre le ratio de victoire et 
-# Le nombre de coup à la tête / le nombre de coup au corp / le nombre de coup au sol 
+# Le nombre de coups à la tête / le nombre de coups au corps / le nombre de coups au sol 
 ##################################################################################
+
 # A - Analyse graphique
 
-# B - Construction du mod�le 
-# B1 - Estimation des param�tres (m�thode des moindres carr�s)
-# B2 - Test global du mod�le (test F) / tests de nullit� descoefficients
-# B3 - Qualit� du mod�le (coefficient R�)
+# B - Construction du modèle
+
+# B1 - Estimation des paramètres (méthode des moindres carrés)
+
+# B2 - Test global du modèle (test F) / tests de nullité descoefficients
+# B3 - Qualité du modèle (coefficient R²)
+
+#Calcul du ratio de victoire
+data_all_unique$ratio_win <- (100 * data_all_unique$wins)/data_all_unique$totalCombat
+
+#Foncition cor permet de calculer la corrélation entre 2 variables
+#Ratio_win vs avg_HEAD_landed
+round(cor(data_all_unique$ratio_win,data_all_unique$avg_HEAD_landed, use = "complete.obs"),2)
+
+#Ratio_win vs avg_BODY_landed
+round(cor(data_all_unique$ratio_win,data_all_unique$avg_BODY_landed, use = "complete.obs"),2)
+
+#Ratio_win vs avg_GROUND_landed
+round(cor(data_all_unique$ratio_win,data_all_unique$avg_GROUND_landed, use = "complete.obs"),2)
+
+#Régression linéaire multiple
+res.lm_ratio_win <- lm(formula=ratio_win ~ avg_HEAD_landed + avg_BODY_landed + avg_GROUND_landed,data=data_all_unique)
+summary(res.lm_ratio_win)
+
+#Régression linéaire multiple sans avg_BODY_landed
+res.lm_ratio_win <- lm(formula=ratio_win ~ avg_HEAD_landed + avg_GROUND_landed,data=data_all_unique)
+summary(res.lm_ratio_win)
 
 
-# C - V�rification des hypoth�ses
-# C1 - Valeurs ajust�es / r�sidus studentis�s (ind�pendance, structure de variance, points aberrants)
+## Graphique
+
+# C - Vérification des hypothèses
+# C1 - Valeurs ajustées / résidus studentisés (indépendance, structure de variance, points aberrants)
+rstud_ratio_win <-  rstudent(res.lm_ratio_win)
+plot(rstud_ratio_win, pch=20, ylab="Résidus studentisés", ylim = c(-3,3))
+abline(h=c(0), col="grey",lty=1,lwd=2)
+abline(h=c(-2,2), col="grey",lty=2,lwd=2)
+
+#Calculs des points entre (2;3) et (-2;-3) 
+
+install.packages("gvlma")
+
+library("gvlma")
+
+gvlma(res.lm_ratio_win)
+
+#Skewness + data tassées à gauche
+#Skewness - data tassées à droite
+#Kurtosis + data centrées à la médiane ou moyenne
+#Kurtosis + data + distribuées/élargies
+
+
+# C - Vérification des hypothèses
+# C1 - Valeurs ajustées / résidus studentis�s (ind�pendance, structure de variance, points aberrants)
 # C2 - Distance de Cook (points influents)
 # C3 - Droite de Henry (normalit�)
+
+
+
+## Anova
+
+## Prédire le nombre de coup tenté en fonction de la catégorie de poids. Que concluez-vous ?
+
+#library(FactoMinerR)
+
+res.anova <- aov(avg_TOTAL_STR_att ~ weight_class, data = data_all_unique)
+summary(res.anova)
+
+install.packages("ggplot2")
+library("ggplot2")
+
+#Graphique
+ggplot(data_all_unique,aes(x=weight_class,y=avg_TOTAL_STR_att))+
+  geom_boxplot()+
+  ggtitle("Boites à moustaches")+
+  xlab("Classe de combat")+
+  ylab("Coup tenté")
+
+#Calcul ANOVA
+anova_class <- lm(avg_TOTAL_STR_att~weight_class,data=data_all_unique)
+summary(anova_class)
+
+# tableau de l'analyse de la variance
+anova(anova_class)
+
+
+## Prédire le nombre de coup tenté à la tête en fonction de la catégorie de poids. Que concluez-vous ?
+
+res.anova_head <- aov(avg_HEAD_att ~ weight_class, data = data_all_unique)
+summary(res.anova_head)
+
+#Graphique
+ggplot(data_all_unique,aes(x=weight_class,y=avg_HEAD_att))+
+  geom_boxplot()+
+  ggtitle("Boites à moustaches")+
+  xlab("Classe de combat")+
+  ylab("Coup tenté")
+
+#
+anova_class_head <- lm(avg_HEAD_att~weight_class,data=data_all_unique)
+summary(anova_class_head)
+
+# tableau de l'analyse de la variance
+anova(anova_class_head)
+
+## Anova à deux facteurs
+#Prédire le nombre de coup tenté en fonction de la catégorie de poids et le style de combat
+
+#Regroupement par sexe
+
+
+#Regroupement par catégorie de poids
+
+table(data_all_unique$weight_class)
+
+data_all_unique$categorie_poids[data_all_unique$weight_class %in% c("Heavyweight", "Light Heavyweight")] <-  "Poids Lourds Homme"
+data_all_unique$categorie_poids[data_all_unique$weight_class %in% c("Middleweight", "Welterweight")] <-  "Poids Moyens Homme"
+data_all_unique$categorie_poids[data_all_unique$weight_class %in% c("Lightweight", "Featherweight")] <-  "Poids Legers Homme"
+data_all_unique$categorie_poids[data_all_unique$weight_class %in% c("Bantamweight", "Flyweight")] <-  "SuperLegers Homme"
+
+#data_all_unique$categorie_poids[data_all_unique$weight_class %in% c("Women's Bantamweight", "Women's Featherweight")] <-  "Poids Moyen Femme"
+
+#On compare les combattants avec 5 matchs ou plus
+
+library("dplyr")
+
+dffiltre <- data_all_unique %>% filter(!is.na(categorie_poids) & totalCombat >= 5)
+dffiltre <- dffiltre %>% filter(Stance %in% c("Open Stance", "Orthodox", "Southpaw", "Switch"))
+
+table(dffiltre$Stance)
+
+dffiltre$Stance <- as.character(dffiltre$Stance)
+dffiltre$Stance <- as.factor(dffiltre$Stance)
+#Graphique
+
+#Style de combat
+ggplot(dffiltre,aes(x=Stance,y=avg_TOTAL_STR_att))+
+  geom_boxplot()+
+  ggtitle("Boites à moustaches")+
+  xlab("Style de combat")+
+  ylab("Coup tenté")
+
+#Catégorie poids
+ggplot(dffiltre,aes(x=categorie_poids,y=avg_TOTAL_STR_att))+
+  geom_boxplot()+
+  ggtitle("Boites à moustaches")+
+  xlab("Catégorie poids")+
+  ylab("Coup tenté")
+
+
+#Calcul ANOVA
+anova_class_style <- lm(avg_TOTAL_STR_att~categorie_poids + Stance,data=dffiltre)
+lm(avg_TOTAL_STR_att~categorie_poids + Stance,data=dffiltre)
+summary(anova_class_style)
+
+#Calcul ANOVA avec FactoMineR
+install.packages("FactoMineR")
+library("FactoMineR")
+res_aovsum <- AovSum(avg_TOTAL_STR_att~categorie_poids + Stance,data=dffiltre)
+summary(res_aovsum)
+anova(res_aovsum)
+
+df$colonne <- relevel(df$colonne, ref = "modalité3")
+
+# tableau de l'analyse de la variance
+anova(anova_class_style)
+
+#Calcul de l'ANOVA avec intéraction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
