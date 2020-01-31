@@ -189,7 +189,7 @@ abline(h=c(-2,2), col="grey",lty=2,lwd=2)
 
 #Calculs des points entre (2;3) et (-2;-3) 
 
-install.packages("gvlma")
+#install.packages("gvlma")
 
 library("gvlma")
 
@@ -217,7 +217,7 @@ gvlma(res.lm_ratio_win)
 res.anova <- aov(avg_TOTAL_STR_att ~ weight_class, data = data_all_unique)
 summary(res.anova)
 
-install.packages("ggplot2")
+#install.packages("ggplot2")
 library("ggplot2")
 
 #Graphique
@@ -305,18 +305,114 @@ lm(avg_TOTAL_STR_att~categorie_poids + Stance,data=dffiltre)
 summary(anova_class_style)
 
 #Calcul ANOVA avec FactoMineR
-install.packages("FactoMineR")
+#install.packages("FactoMineR")
 library("FactoMineR")
 res_aovsum <- AovSum(avg_TOTAL_STR_att~categorie_poids + Stance,data=dffiltre)
 summary(res_aovsum)
 anova(res_aovsum)
 
-df$colonne <- relevel(df$colonne, ref = "modalité3")
+#df$colonne <- relevel(df$colonne, ref = "modalité3")
 
 # tableau de l'analyse de la variance
 anova(anova_class_style)
 
-#Calcul de l'ANOVA avec intéraction
+### Vendredi 31 janvier 2020 ###
+#Calcul de l'ANCOVA
+
+#Prédire le nombre de victoire / nombre de match (ratio_win) en fonction :
+# de la catégorie de poids (categorie_poids)
+# et du nombre de coups atteints total (avg_TOTAL_STR_landed)
+
+res_ancova <- lm(ratio_win ~ categorie_poids + avg_TOTAL_STR_landed, data = dffiltre)
+
+dffiltre$avg_TOTAL_STR_landed
+
+
+
+### Trouver le meilleur modèle possible
+
+install.packages("glmulti")
+library("glmulti")
+
+# Matrice de corrélation
+
+#Sélectionne de colonne avec des valeurs quantitatives
+
+dfquanti <- select_if(dffiltre, is.numeric)
+#dfquanti <- dfquanti[,-1]
+
+matrice_correaltion <- cor(dfquanti, use = "complete.obs")
+
+#Boucle pour créer mon data frame de matrice de corrélation
+
+library(corrplot)
+matrice<-cor(dfquanti, use = "complete.obs")
+head(dfquanti)
+
+toto<-data.frame(matrix(data=NA,nrow=0 , ncol=3))
+
+for(i in 1:dim(matrice)[1]){
+  for(j in 1:dim(matrice)[2]){
+    toto=rbind(toto,data.frame( var1 = colnames(matrice)[i] , var2 = rownames(matrice)[j] , corr = matrice[i,j]))
+  }
+}
+
+#Suppression des valeurs NA et celles = 1
+
+toto <- toto %>%  filter(toto$corr != 1.0000000 & !is.na(toto$corr))
+
+toto[toto$corr> 0.9,]
+toto[, "corr"]
+str(toto)
+
+
+
+
+corrplot(matrice_correaltion)
+
+class(matrice_correaltion)
+
+
+#Test de significativité de la corrélation (p-value)
+
+install.packages("Hmisc")
+library(Hmisc)
+
+install.packages("corrplot")
+library(corrplot)
+
+#Création matrice de corrélation entre toutes les variables
+matrice_correlation <- rcorr(as.matrix(dfquanti))
+
+#
+
+flattenCorrMatrix <- function(cormat, pmat) {
+  ut <- upper.tri(cormat)
+  data.frame(
+    row = rownames(cormat)[row(cormat)[ut]],
+    column = rownames(cormat)[col(cormat)[ut]],
+    cor  =(cormat)[ut],
+    p = pmat[ut]
+  )
+}
+
+flattenCorrMatrix(matrice_correaltion$r, matrice_correaltion$P)
+
+
+matrice_correlation <- as.data.frame(matrice_correlation)
+
+rquery.cormat(dfquanti)
+
+#Corrélogramme : visualisation d’une matrice de corrélation
+
+
+test <- symnum(matrice_correlation, abbr.colnames=FALSE)
+
+glmulti(ratio_win, data = dffiltre, )
+
+
+
+
 
 
 
